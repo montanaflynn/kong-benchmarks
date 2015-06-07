@@ -1,0 +1,231 @@
+$ docker run -e "w=false" -e "p=false" -e="c=100" -e="m=1000" kong-benchmarks
+Starting Cassandra
+Starting Kong
+[INFO] Using configuration: /etc/kong/kong.yml
+[INFO] Proxy port.........8000
+       Admin API port.....8001
+       dnsmasq port.......8053
+       Database...........cassandra keepalive=60000 hosts=localhost port=9042 timeout=1000 keyspace=kong
+[INFO] Connecting to the database...
+[INFO] Database not initialized. Running migrations...
+[OK] Migrated up to: 2015-01-12-175310_init_schema
+[OK] Migrated up to: 2015-04-24-154530_plugins
+[OK] Migrated up to: 2015-05-22-235608_0.3.0
+[INFO] dnsmasq started
+[OK] Started
+Adding API
+{"public_dns":"benchmark.api","target_url":"http:\/\/127.0.0.1:8001\/robots.txt","id":"809168d0-3d0d-4a13-ca2d-0d93f0400659","created_at":1433674874000,"name":"benchmark"}
+Adding Consumer
+{"username":"kong_user","created_at":1433674874000,"id":"809168d0-3d0d-4a13-ca2d-0d93f0400659"}
+{"created_at":1433674874000,"consumer_id":"809168d0-3d0d-4a13-ca2d-0d93f0400659","key":"secure_token","id":"809168d0-3d0d-4a13-ca2d-0d93f0400659"}
+Siege Kong 0.3.0 Vanilla 100 10s
+** SIEGE 3.0.8
+** Preparing 100 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		       54498 hits
+Availability:		      100.00 %
+Elapsed time:		        9.74 secs
+Data transferred:	        1.30 MB
+Response time:		        0.02 secs
+Transaction rate:	     5595.28 trans/sec
+Throughput:		        0.13 MB/sec
+Concurrency:		       99.28
+Successful transactions:       54498
+Failed transactions:	           0
+Longest transaction:	        0.47
+Shortest transaction:	        0.00
+
+Siege Kong 0.3.0 Vanilla 200 10s
+** SIEGE 3.0.8
+** Preparing 200 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		       50554 hits
+Availability:		      100.00 %
+Elapsed time:		        9.96 secs
+Data transferred:	        1.21 MB
+Response time:		        0.04 secs
+Transaction rate:	     5075.70 trans/sec
+Throughput:		        0.12 MB/sec
+Concurrency:		      198.32
+Successful transactions:       50554
+Failed transactions:	           0
+Longest transaction:	        1.22
+Shortest transaction:	        0.00
+
+Siege Kong 0.3.0 Vanilla 300 10s
+** SIEGE 3.0.8
+** Preparing 300 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		       48800 hits
+Availability:		      100.00 %
+Elapsed time:		        9.95 secs
+Data transferred:	        1.16 MB
+Response time:		        0.06 secs
+Transaction rate:	     4904.52 trans/sec
+Throughput:		        0.12 MB/sec
+Concurrency:		      295.43
+Successful transactions:       48800
+Failed transactions:	           0
+Longest transaction:	        0.51
+Shortest transaction:	        0.00
+
+Siege Kong 0.3.0 Vanilla 400 10s
+** SIEGE 3.0.8
+** Preparing 400 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		       51629 hits
+Availability:		      100.00 %
+Elapsed time:		        9.97 secs
+Data transferred:	        1.23 MB
+Response time:		        0.08 secs
+Transaction rate:	     5178.44 trans/sec
+Throughput:		        0.12 MB/sec
+Concurrency:		      393.61
+Successful transactions:       51629
+Failed transactions:	           0
+Longest transaction:	        1.05
+Shortest transaction:	        0.00
+
+Siege Kong 0.3.0 Vanilla 500 10s
+** SIEGE 3.0.8
+** Preparing 500 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		       46292 hits
+Availability:		       99.56 %
+Elapsed time:		        9.97 secs
+Data transferred:	        1.11 MB
+Response time:		        0.11 secs
+Transaction rate:	     4643.13 trans/sec
+Throughput:		        0.11 MB/sec
+Concurrency:		      489.20
+Successful transactions:       46292
+Failed transactions:	         205
+Longest transaction:	        1.42
+Shortest transaction:	        0.00
+
+Siege Kong 0.3.0 Vanilla 600 10s
+** SIEGE 3.0.8
+** Preparing 600 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		       43620 hits
+Availability:		       99.85 %
+Elapsed time:		        9.99 secs
+Data transferred:	        1.04 MB
+Response time:		        0.13 secs
+Transaction rate:	     4366.37 trans/sec
+Throughput:		        0.10 MB/sec
+Concurrency:		      581.35
+Successful transactions:       43620
+Failed transactions:	          64
+Longest transaction:	        1.59
+Shortest transaction:	        0.00
+
+Siege Kong 0.3.0 Vanilla 700 10s
+** SIEGE 3.0.8
+** Preparing 700 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		       42047 hits
+Availability:		       99.77 %
+Elapsed time:		        9.97 secs
+Data transferred:	        1.01 MB
+Response time:		        0.16 secs
+Transaction rate:	     4217.35 trans/sec
+Throughput:		        0.10 MB/sec
+Concurrency:		      675.46
+Successful transactions:       42047
+Failed transactions:	          96
+Longest transaction:	        3.09
+Shortest transaction:	        0.00
+
+Siege Kong 0.3.0 Vanilla 800 10s
+** SIEGE 3.0.8
+** Preparing 800 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		       43488 hits
+Availability:		       99.76 %
+Elapsed time:		        9.91 secs
+Data transferred:	        1.04 MB
+Response time:		        0.17 secs
+Transaction rate:	     4388.29 trans/sec
+Throughput:		        0.11 MB/sec
+Concurrency:		      765.93
+Successful transactions:       43488
+Failed transactions:	         104
+Longest transaction:	        2.25
+Shortest transaction:	        0.00
+
+Siege Kong 0.3.0 Vanilla 900 10s
+** SIEGE 3.0.8
+** Preparing 900 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		       44711 hits
+Availability:		       99.30 %
+Elapsed time:		        9.92 secs
+Data transferred:	        1.08 MB
+Response time:		        0.19 secs
+Transaction rate:	     4507.16 trans/sec
+Throughput:		        0.11 MB/sec
+Concurrency:		      865.20
+Successful transactions:       44711
+Failed transactions:	         315
+Longest transaction:	        1.68
+Shortest transaction:	        0.00
+
+Siege Kong 0.3.0 Vanilla 1000 10s
+** SIEGE 3.0.8
+** Preparing 1000 concurrent users for battle.
+The server is now under siege...
+Lifting the server siege..      done.
+
+Transactions:		       41506 hits
+Availability:		       99.50 %
+Elapsed time:		       10.09 secs
+Data transferred:	        1.00 MB
+Response time:		        0.22 secs
+Transaction rate:	     4113.58 trans/sec
+Throughput:		        0.10 MB/sec
+Concurrency:		      919.20
+Successful transactions:       41506
+Failed transactions:	         209
+Longest transaction:	        2.71
+Shortest transaction:	        0.00
+
+      Date & Time,  Trans,  Elap Time,  Data Trans,  Resp Time,  Trans Rate,  Throughput,  Concurrent,    OKAY,   Failed
+**** Kong 0.3.0 Vanilla 100 ****
+2015-06-07 11:01:24,  54498,       9.74,           1,       0.02,     5595.28,        0.10,       99.28,   54498,       0
+**** Kong 0.3.0 Vanilla 200 ****
+2015-06-07 11:01:34,  50554,       9.96,           1,       0.04,     5075.70,        0.10,      198.32,   50554,       0
+**** Kong 0.3.0 Vanilla 300 ****
+2015-06-07 11:01:44,  48800,       9.95,           1,       0.06,     4904.52,        0.10,      295.43,   48800,       0
+**** Kong 0.3.0 Vanilla 400 ****
+2015-06-07 11:01:54,  51629,       9.97,           1,       0.08,     5178.44,        0.10,      393.61,   51629,       0
+**** Kong 0.3.0 Vanilla 500 ****
+2015-06-07 11:02:04,  46292,       9.97,           1,       0.11,     4643.13,        0.10,      489.20,   46292,     205
+**** Kong 0.3.0 Vanilla 600 ****
+2015-06-07 11:02:14,  43620,       9.99,           1,       0.13,     4366.37,        0.10,      581.35,   43620,      64
+**** Kong 0.3.0 Vanilla 700 ****
+2015-06-07 11:02:24,  42047,       9.97,           1,       0.16,     4217.35,        0.10,      675.46,   42047,      96
+**** Kong 0.3.0 Vanilla 800 ****
+2015-06-07 11:02:34,  43488,       9.91,           1,       0.17,     4388.29,        0.10,      765.93,   43488,     104
+**** Kong 0.3.0 Vanilla 900 ****
+2015-06-07 11:02:44,  44711,       9.92,           1,       0.19,     4507.16,        0.10,      865.20,   44711,     315
+**** Kong 0.3.0 Vanilla 1000 ****
+2015-06-07 11:02:54,  41506,      10.09,           0,       0.22,     4113.58,        0.00,      919.20,   41506,     209

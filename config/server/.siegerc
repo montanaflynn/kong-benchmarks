@@ -1,0 +1,13 @@
+benchmark = true
+logging = true
+show-logfile = false
+logfile $(BENCH_LOGS)/siege.log
+
+fullurl = true
+failures = 10000
+
+user-agent = Kong Benchmarker
+spinner = false
+
+# verbose = true
+# csv = true

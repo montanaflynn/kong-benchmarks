@@ -1,31 +1,32 @@
 #!/bin/sh
 
 # Set variables using ENV or defaults
-concurrency=${c:=100}
-timer=${t:="10s"}
-limit=${l:=500}
-api=${a:="http://127.0.0.1:8001/robots.txt"}
-
-start_cassandra()
-{
-	# @todo allow for external Cassandra
-	echo "Starting Cassandra"
-	mkdir /var/run/cassandra
-	/usr/sbin/cassandra -p /var/run/cassandra/cassandra.pid > /var/log/cassandra/start.log
-	# @todo replace sleep with wait
-	sleep 15
-}
+CONCURRENCY=${c:=100}
+MAX_CONCURRENCY=${m:=500}
+TIMER=${t:="10s"}
+API=${a:="http://127.0.0.1:8001/robots.txt"}
+PLUGINS=${p:=true}
+WARMUP=${w:=true}
+RUN_CASSANDRA=${rc:=true}
 
 start_kong()
 {
+	if [ "$RUN_CASSANDRA" = true ] ; then
+		echo "Starting Cassandra"
+		mkdir /var/log/cassandra
+		cassandra > /var/log/cassandra/start.log
+		# @todo replace sleep with wait
+		sleep 15
+	fi
+
 	echo "Starting Kong"
 	kong start
 	echo "Adding API"
 	curl -s -X POST \
 		--url http://localhost:8001/apis/ \
-		--data 'name=benchmark' \
-		--data 'target_url=http://127.0.0.1:8001/robots.txt' \
-		--data 'public_dns=benchmark.api'
+		--data "name=benchmark" \
+		--data "target_url=$API" \
+		--data "public_dns=benchmark.api"
 
 	echo "Adding Consumer"
 	curl -s -X POST http://localhost:8001/consumers/ \
@@ -35,94 +36,91 @@ start_kong()
 		--data "key=secure_token"
 }
 
+run_siege()
+{
+	# Get Kong version from api pass to jq and trim quotes with sed
+	local NAME="Kong $(curl -s http://localhost:8001/ | jq .version | sed "s/\"//g")"
+	local HOST="benchmark.api"
+	local PROXY="http://localhost:8000"
+	
+	if [ -z "4" ]
+	  then
+	   	local HEADER="-H \"$4\""
+	   else
+	    local HEADER=""
+	fi
+
+	if [ "$WARMUP" = true ] ; then
+		echo "Siege Warming up $NAME $1 $2 $3"
+ 		siege -m "$NAME $1 Warmup $2" -bl -c "$2" -t "$3" -H "host: $HOST" $HEADER $PROXY
+	fi
+
+	echo "Siege $NAME $1 $2 $3" 
+	siege -m "$NAME $1 $2" -bl -c "$2" -t "$3" -H "host: $HOST" $HEADER $PROXY
+}
+
 del_plugin()
 {
 	curl -s -X DELETE http://localhost:8001/apis/benchmark/plugins/"$1"
 }
 
-run_siege()
-{
-	local name="Kong 0.3.0"
-	local host="benchmark.api"
-	local proxy="http://localhost:8000"
-	
-	if [ -z "4" ]
-	  then
-	   	local header="-H \"$4\""
-	   else
-	    local header=""
-	fi
-
-	echo "$1 Siege $2 $3" 
-	siege -m "$name $1 $2" -bl -c "$2" -t "$3" -H "host: $host" $header $proxy
-}
-
 run_benchmarks()
 {
+	run_siege "Core" $CONCURRENCY $TIMER
 
-	run_siege "Warmup" $concurrency $timer
+	if [ "$PLUGINS" = true ] ; then
 
-	run_siege "Vanilla" $concurrency $timer
+		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
+			--data "name=cors" \
+			--data "value.origin=mockbin.com" \
+			--data "value.methods=GET,POST" \
+			--data "value.headers=Accept, Accept-Version, Content-Length" \
+			--data "value.exposed_headers=X-Auth-Token" \
+			--data "value.credentials=true" \
+			--data "value.max_age=3600"
 
-	curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
-		--data "name=cors" \
-		--data "value.origin=mockbin.com" \
-		--data "value.methods=GET,POST" \
-		--data "value.headers=Accept, Accept-Version, Content-Length" \
-		--data "value.exposed_headers=X-Auth-Token" \
-		--data "value.credentials=true" \
-		--data "value.max_age=3600"
+		run_siege "CORS" $CONCURRENCY $TIMER
+		del_plugin cors
 
-	run_siege "CORS" $concurrency $timer
-	del_plugin cors
+		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
+			--data "name=request_transformer" \
+			--data "value.add.headers=x-new-header:some_value, x-another-header:some_value" \
+			--data "value.add.querystring=new-param:some_value, another-param:some_value" \
+			--data "value.add.form=new-form-param:some_value, another-form-param:some_value" \
+			--data "value.remove.headers=x-toremove, x-another-one" \
+			--data "value.remove.querystring=param-toremove, param-another-one" \
+			--data "value.remove.form=formparam-toremove, formparam-another-one"
 
-	curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
-		--data "name=request_transformer" \
-		--data "value.add.headers=x-new-header:some_value, x-another-header:some_value" \
-		--data "value.add.querystring=new-param:some_value, another-param:some_value" \
-		--data "value.add.form=new-form-param:some_value, another-form-param:some_value" \
-		--data "value.remove.headers=x-toremove, x-another-one" \
-		--data "value.remove.querystring=param-toremove, param-another-one" \
-		--data "value.remove.form=formparam-toremove, formparam-another-one"
+		run_siege "Request Transformer" $CONCURRENCY $TIMER
+		del_plugin request_transformer
 
-	run_siege "Request Transformer" $concurrency $timer
-	del_plugin request_transformer
+		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
+			--data "name=response_transformer" \
+			--data "value.add.headers=x-new-header:some_value, x-another-header:some_value" \
+			--data "value.add.json=new-json-key:some_value, another-json-key:some_value" \
+			--data "value.remove.headers=x-toremove, x-another-one" \
+			--data "value.remove.json=json-key-toremove, another-json-key"
+		
+		run_siege "Response Transformer" $CONCURRENCY $TIMER
+		del_plugin response_transformer
 
-	curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
-		--data "name=response_transformer" \
-		--data "value.add.headers=x-new-header:some_value, x-another-header:some_value" \
-		--data "value.add.json=new-json-key:some_value, another-json-key:some_value" \
-		--data "value.remove.headers=x-toremove, x-another-one" \
-		--data "value.remove.json=json-key-toremove, another-json-key"
-	
-	run_siege "Response Transformer" $concurrency $timer
-	del_plugin response_transformer
+		# curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
+		# 	--data "name=keyauth" \
+		# 	--data "value.key_names=apikey"
 
-	curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
-		--data "name=keyauth" \
-		--data "value.key_names=apikey"
+		# run_siege "Key Authentication" $CONCURRENCY $TIMER '-H "apikey: secure_token"'
+		# del_plugin keyauth
+	fi
 
-	run_siege "Key Authentication" $concurrency $timer "apikey: secure_token"
-	del_plugin keyauth
+	concurrency=$(($CONCURRENCY + $c))
 
-	# curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
-	# 	--data "name=requestsizelimiting" \
-	# 	--data "value.allowed_payload_size=10"
-
-	# run_siege "Request Size Limit" $concurrency $timer
-	# del_plugin requestsizelimiting
-
-	concurrency=$(($concurrency + $c))
-
-	if [ $concurrency -le $limit ]; 
+	if [ $CONCURRENCY -le $MAX_CONCURRENCY ]; 
 	then
 		run_benchmarks
 	else
-		cat /var/log/siege.log
+		cat $BENCH_LOGS/siege.log
 	fi
-
 }
 
-start_cassandra
 start_kong
 run_benchmarks
