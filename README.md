@@ -1,6 +1,10 @@
 # Kong Benchmark Dockerfile
 
-A docker benchmarking framework for [Kong](https://github.com/mashape/kong) that runs a series of load tests to determine performance under various conditions such as with plugins enabled and a large number of concurrent connections. The benchmarks are performed by [Siege](https://www.joedog.org/siege-home/) and results are written to `/var/log/benchmarks/siege.log` so you can just add `-v /local/path:/var/log/benchmarks/` when running a container to expose it as a persistent volume containing the log file. If you're running boot2docker you'll have to use a local path inside the `/Users` directory. 
+A docker benchmarking framework for [Kong](https://github.com/mashape/kong) that runs a series of load tests to determine performance under various conditions such as with plugins enabled and a large number of concurrent connections. 
+
+The benchmarks are performed by [Siege](https://www.joedog.org/siege-home/) and results are written to `/var/log/benchmarks/siege.log` so you can just add `-v /local/path:/var/log/benchmarks/` when running a container to expose it as a persistent volume containing the log file. If you're running boot2docker you'll have to use a local path inside the `/Users` directory. 
+
+If you [clean Siege's log](https://gist.github.com/montanaflynn/a13f9d5461409b6c39c4) it's possible to get a nice [CSV file](https://github.com/montanaflynn/kong-benchmarks/blob/master/samples/metrics.csv) that you can [chart](http://www.charted.co/?%7B%22dataUrl%22%3A%22https%3A%2F%2Fgithub.com%2Fmontanaflynn%2Fkong-benchmarks%2Fraw%2Fmaster%2Fsamples%2Fmetrics.csv%22%2C%22charts%22%3A%5B%7B%22type%22%3A%22line%22%2C%22rounding%22%3A%22off%22%7D%2C%7B%22type%22%3A%22line%22%2C%22series%22%3A%5B8%5D%7D%2C%7B%22type%22%3A%22line%22%2C%22series%22%3A%5B4%5D%7D%2C%7B%22type%22%3A%22line%22%2C%22series%22%3A%5B9%5D%7D%5D%7D). 
 
 ## Usage
 
@@ -18,8 +22,10 @@ There are some parameters you can modify by passing environment variables to `do
 
  name          | default                            | description
 ---------------|------------------------------------|------------
-TIME           | "10S"                             | Time to siege for
+TIME           | "10S"                              | Time to siege for
 UPSTREAM       | "http://127.0.0.1:8001/robots.txt" | Upstream target to siege
+VERBOSE_LOGS   | false                              | Maximum concurrency
+DEBUG          | false                              | Maximum concurrency
 WARMUP         | true                               | Benchmark Kong plugins 
 PLUGINS        | true                               | Benchmark Kong plugins 
 RUN_CASSANDRA  | true                               | Run Cassandra

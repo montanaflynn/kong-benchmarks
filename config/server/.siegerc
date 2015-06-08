@@ -1,13 +1,10 @@
 benchmark = true
 logging = true
 show-logfile = false
-logfile /var/log/benchmarks/siege.log
+logfile $(LOG_DIR)/siege.log
 
 fullurl = true
 failures = 10000
 
 user-agent = Kong Benchmarker
 spinner = false
-
-# verbose = true
-# csv = true

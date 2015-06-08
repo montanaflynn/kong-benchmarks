@@ -8,15 +8,23 @@ PLUGINS=${PLUGINS:=true}
 RUN_CASSANDRA=${RUN_CASSANDRA:=true}
 CONCURRENCY=${CONCURRENT:=100}
 MAX_CONCURRENT=${MAX_CONCURRENT:=500}
+VERBOSE_LOGS=${VERBOSE_LOGS:=false}
+DEBUG=${DEBUG:=false}
 
 start_kong()
 {
-	if [ "$RUN_CASSANDRA" = true ] ; then
+	if [ "$RUN_CASSANDRA" = true ]; 
+	then
 		echo "Starting Cassandra"
-		mkdir /var/log/cassandra
-		cassandra > /var/log/cassandra/start.log
+		mkdir /usr/local/kong/
+		cassandra > /usr/local/kong/start.log
 		# @todo replace sleep with wait
-		sleep 15
+		sleep 5
+	fi
+
+	if [ "$VERBOSE_LOGS" = true ]; 
+	then
+		echo "verbose = true\ncsv = true" >> $HOME/.siegerc
 	fi
 
 	echo "Starting Kong"
@@ -42,15 +50,16 @@ run_siege()
 	local NAME="Kong $(curl -s http://localhost:8001/ | jq .version | sed "s/\"//g")"
 	local HOST="benchmark.api"
 	local PROXY="http://localhost:8000"
-	
-	if [ -z "4" ]
-	  then
-	   	local HEADER="-H \"$4\""
-	   else
+
+	if [ -z "$4" ]
+	then
 	    local HEADER=""
+	else 
+		local HEADER="-H \"$4\""
 	fi
 
-	if [ "$WARMUP" = true ] ; then
+	if [ "$WARMUP" = true ]; 
+	then
 		echo "Siege Warming up $NAME $1 $2 $3"
  		siege -m "$NAME $1 Warmup $2" -c "$2" -t "$3" -H "host: $HOST" $HEADER $PROXY
 	fi
@@ -68,7 +77,8 @@ run_benchmarks()
 {
 	run_siege "Core" $CONCURRENCY $TIME
 
-	if [ "$PLUGINS" = true ] ; then
+	if [ "$PLUGINS" = true ]; 
+	then
 
 		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
 			--data "name=cors" \
@@ -78,9 +88,6 @@ run_benchmarks()
 			--data "value.exposed_headers=X-Auth-Token" \
 			--data "value.credentials=true" \
 			--data "value.max_age=3600"
-
-		run_siege "CORS" $CONCURRENCY $TIME
-		del_plugin cors
 
 		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
 			--data "name=request_transformer" \
@@ -108,7 +115,10 @@ run_benchmarks()
 			--data "name=keyauth" \
 			--data "value.key_names=apikey"
 
-		run_siege "Key Authentication" $CONCURRENCY $TIME '-H "apikey: secure_token"'
+		run_siege "CORS" $CONCURRENCY $TIME
+		del_plugin cors
+
+		run_siege "Key Authentication" $CONCURRENCY $TIME "apikey: secure_token"
 		del_plugin keyauth
 	fi
 
@@ -119,6 +129,11 @@ run_benchmarks()
 		run_benchmarks
 	else
 		cat /var/log/benchmarks/siege.log
+	fi
+
+	if [ "$DEBUG" = true ]; 
+	then
+		cat /usr/local/kong/logs/error.log
 	fi
 }
 
