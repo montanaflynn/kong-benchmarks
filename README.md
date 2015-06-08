@@ -18,31 +18,32 @@ There are some parameters you can modify by passing environment variables to `do
 
  name          | default                            | description
 ---------------|------------------------------------|------------
-time           | "10S"                              | Time to siege for
-upstream       | "http://127.0.0.1:8001/robots.txt" | Upstream target to siege
-plugins        | true                               | Benchmark Kong plugins 
-run_cassandra  | true                               | Run Cassandra
-concurrent     | 100                                | Starting concurrency
-max_concurrent | 500                                | Maximum concurrency
+TIME           | "10S"                             | Time to siege for
+UPSTREAM       | "http://127.0.0.1:8001/robots.txt" | Upstream target to siege
+WARMUP         | true                               | Benchmark Kong plugins 
+PLUGINS        | true                               | Benchmark Kong plugins 
+RUN_CASSANDRA  | true                               | Run Cassandra
+CONCURRENT     | 100                                | Starting concurrency
+MAX_CONCURRENT | 500                                | Maximum concurrency
 
 ## Examples
 
 Use external Cassandra by replacing the `kong.yml` file and adding the `rc` environment variable.
 
 ```
-docker run -e "rc=false" -v $PWD/kong-config/:/etc/kong/ montanaflynn/kong-debian-benchmark
+docker run -e "RUN_CASSANDRA=false" -v $PWD/kong-config/:/etc/kong/ montanaflynn/kong-debian-benchmark
 ```
 
-Here's Kong using [mockbin](http://mockbin.com/status/418) as the upstream API up to 100 concurrent connections in increments of 20:
+Using [mockbin](http://mockbin.com/status/418) as the upstream API up to 100 concurrent connections in increments of 20:
 
 ```
-docker run -e "c=20" -e "m=100" -e "a=http://mockbin.com/status/418" kong-benchmarks
+docker run -e "CONCURRENT=20" -e "MAX_CUNCURRENT=100" -e "UPSTREAM=http://mockbin.com/status/418" kong-benchmarks
 ```
 
 Here's how you can run a short test of 50 concurrent connections without plugins:
 
 ```
-docker run -e "c=50" -e "m=50" -e "p=false" kong-benchmarks
+docker run -e "CONCURRENT=50" -e "MAX_CUNCURRENT=50" -e "PLUGINS=false" kong-benchmarks
 ```
 
 Keeping a persistent log file on your docker host, subsequent runs append to the file:
