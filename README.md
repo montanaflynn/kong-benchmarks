@@ -22,7 +22,7 @@ There are some parameters you can modify by passing environment variables to `do
 
  name          | default                            | description
 ---------------|------------------------------------|------------
-TIME           | "10S"                              | Time to siege for
+TIME           | "60S"                              | Time to siege for
 UPSTREAM       | "http://127.0.0.1:8001/robots.txt" | Upstream target to siege
 VERBOSE_LOGS   | false                              | Maximum concurrency
 DEBUG          | false                              | Maximum concurrency
