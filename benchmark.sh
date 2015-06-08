@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Set variables using ENV or defaults
-TIME=${TIME:="10s"}
+TIME=${TIME:="60S"}
 UPSTREAM=${UPSTREAM:="http://127.0.0.1:8001/robots.txt"}
 WARMUP=${WARMUP:=true}
 PLUGINS=${PLUGINS:=true}
@@ -70,24 +70,15 @@ run_siege()
 
 del_plugin()
 {
-	curl -s -X DELETE http://localhost:8001/apis/benchmark/plugins/"$1"
+	curl -s -X DELETE "http://localhost:8001/apis/benchmark/plugins/$1"
 }
 
 run_benchmarks()
 {
-	run_siege "Core" $CONCURRENCY $TIME
+	run_siege "Proxy" $CONCURRENCY $TIME
 
 	if [ "$PLUGINS" = true ]; 
 	then
-
-		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
-			--data "name=cors" \
-			--data "value.origin=mockbin.com" \
-			--data "value.methods=GET,POST" \
-			--data "value.headers=Accept, Accept-Version, Content-Length" \
-			--data "value.exposed_headers=X-Auth-Token" \
-			--data "value.credentials=true" \
-			--data "value.max_age=3600"
 
 		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
 			--data "name=request_transformer" \
@@ -112,11 +103,20 @@ run_benchmarks()
 		del_plugin response_transformer
 
 		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
-			--data "name=keyauth" \
-			--data "value.key_names=apikey"
+			--data "name=cors" \
+			--data "value.origin=mockbin.com" \
+			--data "value.methods=GET,POST" \
+			--data "value.headers=Accept, Accept-Version, Content-Length" \
+			--data "value.exposed_headers=X-Auth-Token" \
+			--data "value.credentials=true" \
+			--data "value.max_age=3600"
 
 		run_siege "CORS" $CONCURRENCY $TIME
 		del_plugin cors
+
+		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
+			--data "name=keyauth" \
+			--data "value.key_names=apikey"
 
 		run_siege "Key Authentication" $CONCURRENCY $TIME "apikey: secure_token"
 		del_plugin keyauth
