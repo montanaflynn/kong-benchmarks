@@ -35,7 +35,7 @@ databases_available:
       hosts: "kongdb.org"
       port: 40001
       timeout: 1000
-      keyspace: kong-benchmark
+      keyspace: kong_benchmark
       keepalive: 60000 # in milliseconds
 
 ## Cassandra cache configuration
