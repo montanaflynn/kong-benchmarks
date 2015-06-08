@@ -28,10 +28,10 @@ MAX_CONCURRENT | 500                                | Maximum concurrency
 
 ## Examples
 
-Use external Cassandra by replacing the `kong.yml` file and adding the `rc` environment variable.
+Use external Cassandra by replacing the `kong.yml` file and not running Cassandra.
 
 ```
-docker run -e "RUN_CASSANDRA=false" -v $PWD/kong-config/:/etc/kong/ montanaflynn/kong-debian-benchmark
+docker run -e "RUN_CASSANDRA=false" -v $PWD/kong-config/:/etc/kong/ kong-benchmarks
 ```
 
 Using [mockbin](http://mockbin.com/status/418) as the upstream API up to 100 concurrent connections in increments of 20:
