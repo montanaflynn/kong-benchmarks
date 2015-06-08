@@ -1,3 +1,5 @@
+# Credit: https://gist.github.com/stansmet/3067988
+
 benchmark = true
 logging = true
 show-logfile = false
