@@ -1,6 +1,6 @@
 # Kong Benchmark Dockerfile
 
-A docker benchmarking framework for [Kong](https://github.com/mashape/kong) that runs a series of load tests to determine performance under various conditions. 
+A docker benchmarking framework for [Kong](https://github.com/mashape/kong) that runs a series of load tests to determine performance under various conditions such as with plugins enabled and a large number of concurrent connections. The benchmarks are performed by [Siege](https://www.joedog.org/siege-home/) and results are written to `/var/log/benchmarks/siege.log` so you can just add `-v /local/path:/var/log/benchmarks/` when running a container to expose it as a persistent volume containing the log file. If you're running boot2docker you'll have to use a local path inside the `/Users` directory. 
 
 ## Usage
 
@@ -16,18 +16,14 @@ docker run kong-benchmarks
 
 There are some parameters you can modify by passing environment variables to `docker run`:
 
- name | default                            | description
-------|------------------------------------|------------
-c     | 100                                | Starting concurrency
-m     | 500                                | Maximum concurrency
-t     | "10S"                              | Time to siege for
-a     | "http://127.0.0.1:8001/robots.txt" | API to siege against
-p     | true                               | Benchmark Kong plugins 
-rc    | true                               | Run Cassandra
-
-I wanted to benchmark how Kong performed over a range of concurrent connections so that's why we have both starting and maximum conccurent connections parameters.
-
-The benchmarks are performed by [Siege](https://www.joedog.org/siege-home/) and results are written to `/var/log/benchmarks/siege.log` so you can just add `-v /local/path:/var/log/benchmarks/` when running a container to expose it as a persistent volume containing the log file. If you're running boot2docker you'll have to use a local path inside the `/Users` directory. 
+ name          | default                            | description
+---------------|------------------------------------|------------
+time           | "10S"                              | Time to siege for
+upstream       | "http://127.0.0.1:8001/robots.txt" | Upstream target to siege
+plugins        | true                               | Benchmark Kong plugins 
+run_cassandra  | true                               | Run Cassandra
+concurrent     | 100                                | Starting concurrency
+max_concurrent | 500                                | Maximum concurrency
 
 ## Examples
 

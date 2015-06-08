@@ -1,7 +1,7 @@
 benchmark = true
 logging = true
 show-logfile = false
-logfile $(BENCH_LOGS)/siege.log
+logfile /var/log/benchmarks/siege.log
 
 fullurl = true
 failures = 10000

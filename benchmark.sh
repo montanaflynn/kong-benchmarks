@@ -1,13 +1,13 @@
 #!/bin/sh
 
 # Set variables using ENV or defaults
-CONCURRENCY=${c:=100}
-MAX_CONCURRENCY=${m:=500}
-TIMER=${t:="10s"}
-API=${a:="http://127.0.0.1:8001/robots.txt"}
-PLUGINS=${p:=true}
-WARMUP=${w:=true}
-RUN_CASSANDRA=${rc:=true}
+TIME=${TIME:="10s"}
+UPSTREAM=${UPSTREAM:="http://127.0.0.1:8001/robots.txt"}
+WARMUP=${WARMUP:=true}
+PLUGINS=${PLUGINS:=true}
+RUN_CASSANDRA=${RUN_CASSANDRA:=true}
+CONCURRENCY=${CONCURRENT:=100}
+MAX_CONCURRENT=${MAX_CONCURRENT:=500}
 
 start_kong()
 {
@@ -25,7 +25,7 @@ start_kong()
 	curl -s -X POST \
 		--url http://localhost:8001/apis/ \
 		--data "name=benchmark" \
-		--data "target_url=$API" \
+		--data "target_url=$UPSTREAM" \
 		--data "public_dns=benchmark.api"
 
 	echo "Adding Consumer"
@@ -52,11 +52,11 @@ run_siege()
 
 	if [ "$WARMUP" = true ] ; then
 		echo "Siege Warming up $NAME $1 $2 $3"
- 		siege -m "$NAME $1 Warmup $2" -bl -c "$2" -t "$3" -H "host: $HOST" $HEADER $PROXY
+ 		siege -m "$NAME $1 Warmup $2" -c "$2" -t "$3" -H "host: $HOST" $HEADER $PROXY
 	fi
 
 	echo "Siege $NAME $1 $2 $3" 
-	siege -m "$NAME $1 $2" -bl -c "$2" -t "$3" -H "host: $HOST" $HEADER $PROXY
+	siege -m "$NAME $1 $2" -c "$2" -t "$3" -H "host: $HOST" $HEADER $PROXY
 }
 
 del_plugin()
@@ -66,7 +66,7 @@ del_plugin()
 
 run_benchmarks()
 {
-	run_siege "Core" $CONCURRENCY $TIMER
+	run_siege "Core" $CONCURRENCY $TIME
 
 	if [ "$PLUGINS" = true ] ; then
 
@@ -79,7 +79,7 @@ run_benchmarks()
 			--data "value.credentials=true" \
 			--data "value.max_age=3600"
 
-		run_siege "CORS" $CONCURRENCY $TIMER
+		run_siege "CORS" $CONCURRENCY $TIME
 		del_plugin cors
 
 		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
@@ -91,7 +91,7 @@ run_benchmarks()
 			--data "value.remove.querystring=param-toremove, param-another-one" \
 			--data "value.remove.form=formparam-toremove, formparam-another-one"
 
-		run_siege "Request Transformer" $CONCURRENCY $TIMER
+		run_siege "Request Transformer" $CONCURRENCY $TIME
 		del_plugin request_transformer
 
 		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
@@ -101,24 +101,24 @@ run_benchmarks()
 			--data "value.remove.headers=x-toremove, x-another-one" \
 			--data "value.remove.json=json-key-toremove, another-json-key"
 		
-		run_siege "Response Transformer" $CONCURRENCY $TIMER
+		run_siege "Response Transformer" $CONCURRENCY $TIME
 		del_plugin response_transformer
 
-		# curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
-		# 	--data "name=keyauth" \
-		# 	--data "value.key_names=apikey"
+		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
+			--data "name=keyauth" \
+			--data "value.key_names=apikey"
 
-		# run_siege "Key Authentication" $CONCURRENCY $TIMER '-H "apikey: secure_token"'
-		# del_plugin keyauth
+		run_siege "Key Authentication" $CONCURRENCY $TIME '-H "apikey: secure_token"'
+		del_plugin keyauth
 	fi
 
-	concurrency=$(($CONCURRENCY + $c))
+	CONCURRENCY=$(($CONCURRENCY + $CONCURRENT))
 
-	if [ $CONCURRENCY -le $MAX_CONCURRENCY ]; 
+	if [ $CONCURRENCY -le $MAX_CONCURRENT ]; 
 	then
 		run_benchmarks
 	else
-		cat $BENCH_LOGS/siege.log
+		cat /var/log/benchmarks/siege.log
 	fi
 }
 

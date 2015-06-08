@@ -34,9 +34,9 @@ ADD config/server/sysctl.conf /etc/sysctl.conf
 ADD config/server/limits.conf /etc/security/limits.conf
 
 # Benchark
-ENV BENCH_LOGS /var/log/benchmarks/
-RUN mkdir -p $BENCH_LOGS
-ADD config/server/ /root/.siegerc
+RUN mkdir -p /var/log/benchmarks
+RUN touch /var/log/benchmarks/siege.log
+ADD config/server/.siegerc /root/.siegerc
 ADD benchmark.sh /usr/local/bin/benchmark
 
 CMD ["benchmark"]
