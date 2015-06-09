@@ -16,8 +16,7 @@ start_kong()
 	if [ "$RUN_CASSANDRA" = true ]; 
 	then
 		echo "Starting Cassandra"
-		mkdir /usr/local/kong/
-		cassandra > /usr/local/kong/start.log
+		cassandra > $LOG_DIR/start.log
 		# @todo replace sleep with wait
 		sleep 5
 	fi
@@ -79,7 +78,6 @@ run_benchmarks()
 
 	if [ "$PLUGINS" = true ]; 
 	then
-
 		curl -s -X POST http://localhost:8001/apis/benchmark/plugins \
 			--data "name=request_transformer" \
 			--data "value.add.headers=x-new-header:some_value, x-another-header:some_value" \
@@ -128,12 +126,12 @@ run_benchmarks()
 	then
 		run_benchmarks
 	else
-		cat /var/log/benchmarks/siege.log
+		cat $LOG_DIR/siege.log
 	fi
 
 	if [ "$DEBUG" = true ]; 
 	then
-		cat /usr/local/kong/logs/error.log
+		cat $LOG_DIR/error.log
 	fi
 }
 
